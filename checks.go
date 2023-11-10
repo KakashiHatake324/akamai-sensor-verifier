@@ -1292,7 +1292,6 @@ func peCnt(information OrderedMap) (ok bool, expected, actual string) {
 func ta(information OrderedMap) (ok bool, expected, actual string) {
 	var split2 []string
 	ok, expected, actual, split2 = splitMouseData(information)
-
 	if !ok {
 		return
 	}
