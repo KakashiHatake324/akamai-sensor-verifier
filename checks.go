@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
-	"github.com/Noooste/go-utils"
-	"github.com/fatih/color"
 	"math"
 	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
+	log "github.com/sirupsen/logrus"
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -97,7 +98,7 @@ var AllChecks = []any{
 	},
 }
 
-func Check(om utils.OrderedMap) bool {
+func Check(om OrderedMap) bool {
 	buf, ok := check(om, AllChecks, false, "")
 
 	if !ok {
@@ -122,7 +123,7 @@ func GetFunctionName(temp interface{}) string {
 	return ToSnakeCase(strs[len(strs)-1])
 }
 
-func CheckAssert(information utils.OrderedMap, last bool, skip bool, tab string, fn func(utils.OrderedMap) (ok bool, expected, actual string)) (buf *bytes.Buffer, ok bool) {
+func CheckAssert(information OrderedMap, last bool, skip bool, tab string, fn func(OrderedMap) (ok bool, expected, actual string)) (buf *bytes.Buffer, ok bool) {
 	var expected, actual string
 	if skip {
 		buf = new(bytes.Buffer)
@@ -157,7 +158,7 @@ func CheckAssert(information utils.OrderedMap, last bool, skip bool, tab string,
 	return
 }
 
-func check(om utils.OrderedMap, list []any, skip bool, tab string) (buf *bytes.Buffer, ok bool) {
+func check(om OrderedMap, list []any, skip bool, tab string) (buf *bytes.Buffer, ok bool) {
 	ok = true
 	buf = new(bytes.Buffer)
 	listLength := len(list)
@@ -165,8 +166,8 @@ func check(om utils.OrderedMap, list []any, skip bool, tab string) (buf *bytes.B
 		k := list[i]
 
 		switch k.(type) {
-		case func(utils.OrderedMap) (ok bool, expected, actual string):
-			b, g := CheckAssert(om, i == listLength-1, skip, tab, list[i].(func(utils.OrderedMap) (ok bool, expected, actual string)))
+		case func(OrderedMap) (ok bool, expected, actual string):
+			b, g := CheckAssert(om, i == listLength-1, skip, tab, list[i].(func(OrderedMap) (ok bool, expected, actual string)))
 			ok = ok && g
 			skip = skip || !g
 			buf.WriteString(b.String())
@@ -223,7 +224,7 @@ func check(om utils.OrderedMap, list []any, skip bool, tab string) (buf *bytes.B
 	return
 }
 
-func sensorValue(information utils.OrderedMap) (ok bool, expected, actual string) {
+func sensorValue(information OrderedMap) (ok bool, expected, actual string) {
 	t, ok := information.Map["raw"].([]uint8)
 
 	if !ok {
@@ -249,7 +250,7 @@ func sensorValue(information utils.OrderedMap) (ok bool, expected, actual string
 
 var keyOrder = []string{"-100", "-105", "-108", "-101", "-110", "-117", "-109", "-102", "-111", "-114", "-103", "-106", "-115", "-112", "-119", "-122", "-123", "-124", "-126", "-127", "-128", "-131", "-132", "-133", "-70", "-80", "-90", "-116", "-129"}
 
-func KeyOrder(information utils.OrderedMap) (ok bool, expected, actual string) {
+func KeyOrder(information OrderedMap) (ok bool, expected, actual string) {
 	keys := information.Order[4:]
 
 	for i, v := range keyOrder {
@@ -263,7 +264,7 @@ func KeyOrder(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func getSplitDeviceData(information utils.OrderedMap) (ok bool, expected, actual string, split []string) {
+func getSplitDeviceData(information OrderedMap) (ok bool, expected, actual string, split []string) {
 	dd, ok := information.Map["-100"]
 
 	if !ok {
@@ -285,7 +286,7 @@ func getSplitDeviceData(information utils.OrderedMap) (ok bool, expected, actual
 	return true, "", "", s
 }
 
-func deviceDataLength(information utils.OrderedMap) (ok bool, expected, actual string) {
+func deviceDataLength(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -300,7 +301,7 @@ func deviceDataLength(information utils.OrderedMap) (ok bool, expected, actual s
 	return true, "", ""
 }
 
-func userAgentHash(information utils.OrderedMap) (ok bool, expected, actual string) {
+func userAgentHash(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -324,7 +325,7 @@ func userAgentHash(information utils.OrderedMap) (ok bool, expected, actual stri
 	return true, "", ""
 }
 
-func getStartTs(information utils.OrderedMap) (ok bool, expected, actual string, ts int) {
+func getStartTs(information OrderedMap) (ok bool, expected, actual string, ts int) {
 	var startTs any
 	startTs, ok = information.Map["-115"]
 
@@ -342,7 +343,7 @@ func getStartTs(information utils.OrderedMap) (ok bool, expected, actual string,
 	return true, "", "", ts
 }
 
-func timestampDivided(information utils.OrderedMap) (ok bool, expected, actual string) {
+func timestampDivided(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -369,7 +370,7 @@ func timestampDivided(information utils.OrderedMap) (ok bool, expected, actual s
 	return true, "", ""
 }
 
-func randomCalculation(information utils.OrderedMap) (ok bool, expected, actual string) {
+func randomCalculation(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -395,7 +396,7 @@ func randomCalculation(information utils.OrderedMap) (ok bool, expected, actual 
 	return true, "", ""
 }
 
-func z1(information utils.OrderedMap) (ok bool, expected, actual string) {
+func z1(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -421,7 +422,7 @@ func z1(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func callPhantom(information utils.OrderedMap) (ok bool, expected, actual string) {
+func callPhantom(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -436,7 +437,7 @@ func callPhantom(information utils.OrderedMap) (ok bool, expected, actual string
 	return true, "", ""
 }
 
-func activeXObject(information utils.OrderedMap) (ok bool, expected, actual string) {
+func activeXObject(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -452,7 +453,7 @@ func activeXObject(information utils.OrderedMap) (ok bool, expected, actual stri
 	return true, "", ""
 }
 
-func documentMode(information utils.OrderedMap) (ok bool, expected, actual string) {
+func documentMode(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -468,7 +469,7 @@ func documentMode(information utils.OrderedMap) (ok bool, expected, actual strin
 	return true, "", ""
 }
 
-func webstore(information utils.OrderedMap) (ok bool, expected, actual string) {
+func webstore(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -484,7 +485,7 @@ func webstore(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func onLine(information utils.OrderedMap) (ok bool, expected, actual string) {
+func onLine(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -500,7 +501,7 @@ func onLine(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func opera(information utils.OrderedMap) (ok bool, expected, actual string) {
+func opera(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -516,7 +517,7 @@ func opera(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func installTrigger(information utils.OrderedMap) (ok bool, expected, actual string) {
+func installTrigger(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -532,7 +533,7 @@ func installTrigger(information utils.OrderedMap) (ok bool, expected, actual str
 	return true, "", ""
 }
 
-func HTMLElement(information utils.OrderedMap) (ok bool, expected, actual string) {
+func HTMLElement(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -548,7 +549,7 @@ func HTMLElement(information utils.OrderedMap) (ok bool, expected, actual string
 	return true, "", ""
 }
 
-func RTCPeerConnection(information utils.OrderedMap) (ok bool, expected, actual string) {
+func RTCPeerConnection(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -564,7 +565,7 @@ func RTCPeerConnection(information utils.OrderedMap) (ok bool, expected, actual 
 	return true, "", ""
 }
 
-func mozInnerScreenY(information utils.OrderedMap) (ok bool, expected, actual string) {
+func mozInnerScreenY(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -580,7 +581,7 @@ func mozInnerScreenY(information utils.OrderedMap) (ok bool, expected, actual st
 	return true, "", ""
 }
 
-func vibrate(information utils.OrderedMap) (ok bool, expected, actual string) {
+func vibrate(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -596,7 +597,7 @@ func vibrate(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func getBattery(information utils.OrderedMap) (ok bool, expected, actual string) {
+func getBattery(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -612,7 +613,7 @@ func getBattery(information utils.OrderedMap) (ok bool, expected, actual string)
 	return true, "", ""
 }
 
-func forEach(information utils.OrderedMap) (ok bool, expected, actual string) {
+func forEach(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -628,7 +629,7 @@ func forEach(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func FileReader(information utils.OrderedMap) (ok bool, expected, actual string) {
+func FileReader(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = getSplitDeviceData(information)
 
@@ -644,7 +645,7 @@ func FileReader(information utils.OrderedMap) (ok bool, expected, actual string)
 	return true, "", ""
 }
 
-func FpValStrLength(information utils.OrderedMap) (ok bool, expected, actual string) {
+func FpValStrLength(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	inf, ok := information.Map["-70"]
 	if !ok {
@@ -660,7 +661,7 @@ func FpValStrLength(information utils.OrderedMap) (ok bool, expected, actual str
 	return true, "", ""
 }
 
-func fpValStrCalculated(information utils.OrderedMap) (ok bool, expected, actual string) {
+func fpValStrCalculated(information OrderedMap) (ok bool, expected, actual string) {
 	inf, ok := information.Map["-70"]
 	if !ok {
 		return false, "true", "false"
@@ -687,7 +688,7 @@ func fpValStrCalculated(information utils.OrderedMap) (ok bool, expected, actual
 	return true, "", ""
 }
 
-func getAbck(information utils.OrderedMap) (ok bool, expected, actual, abck string) {
+func getAbck(information OrderedMap) (ok bool, expected, actual, abck string) {
 	inf, ok := information.Map["-115"]
 	if !ok {
 		return false, "true", "false", ""
@@ -704,7 +705,7 @@ func getAbck(information utils.OrderedMap) (ok bool, expected, actual, abck stri
 	return
 }
 
-func splitPizte(information utils.OrderedMap) (ok bool, expected, actual string, split []string) {
+func splitPizte(information OrderedMap) (ok bool, expected, actual string, split []string) {
 	inf, ok := information.Map["-115"]
 	if !ok {
 		return false, "true", "false", nil
@@ -715,7 +716,7 @@ func splitPizte(information utils.OrderedMap) (ok bool, expected, actual string,
 	return true, "", "", split
 }
 
-func abckHash(information utils.OrderedMap) (ok bool, expected, actual string) {
+func abckHash(information OrderedMap) (ok bool, expected, actual string) {
 	ok, expected, actual, abck := getAbck(information)
 
 	if !ok {
@@ -754,7 +755,7 @@ func abckHash(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func pizteIndex(information utils.OrderedMap) (ok bool, expected, actual string) {
+func pizteIndex(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitPizte(information)
 
@@ -801,7 +802,7 @@ func JrsReversed(rd, t int64) (o int) {
 	return CalDis(oList)
 }
 
-func u1U2(information utils.OrderedMap) (ok bool, expected, actual string) {
+func u1U2(information OrderedMap) (ok bool, expected, actual string) {
 	var startTime int
 	ok, expected, actual, startTime = getStartTs(information)
 
@@ -829,7 +830,7 @@ func u1U2(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func splitMouseData(information utils.OrderedMap) (ok bool, expected, actual string, split []string) {
+func splitMouseData(information OrderedMap) (ok bool, expected, actual string, split []string) {
 	inf, ok := information.Map["-110"]
 	if !ok {
 		return false, "true", "false", nil
@@ -844,7 +845,7 @@ func splitMouseData(information utils.OrderedMap) (ok bool, expected, actual str
 	return true, "", "", split[:len(split)-1]
 }
 
-func meVel(information utils.OrderedMap) (ok bool, expected, actual string) {
+func meVel(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitMouseData(information)
 
@@ -877,7 +878,7 @@ func meVel(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func meCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
+func meCnt(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitMouseData(information)
 	if len(split) == 0 {
@@ -929,7 +930,7 @@ func meCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func splitKeyboardData(information utils.OrderedMap) (ok bool, expected, actual string, split []string) {
+func splitKeyboardData(information OrderedMap) (ok bool, expected, actual string, split []string) {
 	inf, ok := information.Map["-108"]
 	if !ok {
 		return false, "true", "false", nil
@@ -944,7 +945,7 @@ func splitKeyboardData(information utils.OrderedMap) (ok bool, expected, actual 
 	return true, "", "", split[:len(split)-1]
 }
 
-func keVel(information utils.OrderedMap) (ok bool, expected, actual string) {
+func keVel(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitKeyboardData(information)
 
@@ -977,7 +978,7 @@ func keVel(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func keCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
+func keCnt(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitKeyboardData(information)
 	if len(split) == 0 {
@@ -1020,7 +1021,7 @@ func keCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func splitTouchData(information utils.OrderedMap) (ok bool, expected, actual string, split []string) {
+func splitTouchData(information OrderedMap) (ok bool, expected, actual string, split []string) {
 	inf, ok := information.Map["-117"]
 	if !ok {
 		return false, "true", "false", nil
@@ -1035,7 +1036,7 @@ func splitTouchData(information utils.OrderedMap) (ok bool, expected, actual str
 	return true, "", "", split[:len(split)-1]
 }
 
-func teVel(information utils.OrderedMap) (ok bool, expected, actual string) {
+func teVel(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitTouchData(information)
 
@@ -1068,7 +1069,7 @@ func teVel(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func teCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
+func teCnt(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitTouchData(information)
 	if len(split) == 0 {
@@ -1111,7 +1112,7 @@ func teCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func doeVel(information utils.OrderedMap) (ok bool, expected, actual string) {
+func doeVel(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	info := information.Map["-109"].(string)
 
@@ -1141,7 +1142,7 @@ func doeVel(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func dmeVel(information utils.OrderedMap) (ok bool, expected, actual string) {
+func dmeVel(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	info := information.Map["-111"].(string)
 	split = strings.Split(info, ";")
@@ -1170,7 +1171,7 @@ func dmeVel(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func totVel(information utils.OrderedMap) (ok bool, expected, actual string) {
+func totVel(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	info := information.Map["-115"].(string)
 
@@ -1204,7 +1205,7 @@ func totVel(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func d2(information utils.OrderedMap) (ok bool, expected, actual string) {
+func d2(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitPizte(information)
 
@@ -1216,7 +1217,7 @@ func d2(information utils.OrderedMap) (ok bool, expected, actual string) {
 	ok, expected, actual, startTime = getStartTs(information)
 
 	z := int(math.Floor(float64(startTime / 4064256)))
-
+	log.Println(startTime)
 	if split[11] != strconv.Itoa(z/23) {
 		return false, strconv.Itoa(z / 23), split[11]
 	}
@@ -1224,7 +1225,7 @@ func d2(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func d2Divided(information utils.OrderedMap) (ok bool, expected, actual string) {
+func d2Divided(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitPizte(information)
 
@@ -1244,7 +1245,7 @@ func d2Divided(information utils.OrderedMap) (ok bool, expected, actual string) 
 	return true, "", ""
 }
 
-func splitPointerData(information utils.OrderedMap) (ok bool, expected, actual string, split []string) {
+func splitPointerData(information OrderedMap) (ok bool, expected, actual string, split []string) {
 	info := information.Map["-114"].(string)
 
 	split = strings.Split(info, ";")
@@ -1257,7 +1258,7 @@ func splitPointerData(information utils.OrderedMap) (ok bool, expected, actual s
 	return true, "", "", split
 }
 
-func peCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
+func peCnt(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitPointerData(information)
 	if !ok {
@@ -1288,7 +1289,7 @@ func peCnt(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func ta(information utils.OrderedMap) (ok bool, expected, actual string) {
+func ta(information OrderedMap) (ok bool, expected, actual string) {
 	var split2 []string
 	ok, expected, actual, split2 = splitMouseData(information)
 
@@ -1373,7 +1374,7 @@ func ta(information utils.OrderedMap) (ok bool, expected, actual string) {
 	return true, "", ""
 }
 
-func webdriverCheck(information utils.OrderedMap) (ok bool, expected, actual string) {
+func webdriverCheck(information OrderedMap) (ok bool, expected, actual string) {
 	var split []string
 	ok, expected, actual, split = splitPizte(information)
 
@@ -1406,7 +1407,7 @@ func webdriverCheck(information utils.OrderedMap) (ok bool, expected, actual str
 	return true, "", ""
 }
 
-func powLength(information utils.OrderedMap) (ok bool, expected, actual string) {
+func powLength(information OrderedMap) (ok bool, expected, actual string) {
 	challenge := information.Map["-124"].(string)
 	if challenge == "" {
 		return true, "", ""
@@ -1429,7 +1430,7 @@ func bdm(t [32]byte, a int) int {
 	return e
 }
 
-func powCheck(information utils.OrderedMap) (ok bool, expected, actual string) {
+func powCheck(information OrderedMap) (ok bool, expected, actual string) {
 	challenge := information.Map["-124"].(string)
 	if challenge == "" {
 		return true, "", ""

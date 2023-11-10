@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/Noooste/go-utils"
-	"github.com/fatih/color"
-	"github.com/leekchan/accounting"
 	"math"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/leekchan/accounting"
 )
 
 var AllInformation = []any{
@@ -130,7 +130,7 @@ var AllInformation = []any{
 	},
 }
 
-func DisplayInformation(information utils.OrderedMap) {
+func DisplayInformation(information OrderedMap) {
 	buf := display(information, AllInformation, "")
 
 	fmt.Println("┌───────────────────────┐")
@@ -146,7 +146,7 @@ func getTerminalSize() (width int, height int) {
 	height = 100
 	return
 }
-func displaySpecificInformation(information utils.OrderedMap, last bool, tab string, fn func(om utils.OrderedMap) (buf *bytes.Buffer)) (buf *bytes.Buffer) {
+func displaySpecificInformation(information OrderedMap, last bool, tab string, fn func(om OrderedMap) (buf *bytes.Buffer)) (buf *bytes.Buffer) {
 	// Call the provided function and get the output buffer
 
 	buf = new(bytes.Buffer)
@@ -180,15 +180,15 @@ func displaySpecificInformation(information utils.OrderedMap, last bool, tab str
 	return
 }
 
-func display(om utils.OrderedMap, list []any, tab string) (buf *bytes.Buffer) {
+func display(om OrderedMap, list []any, tab string) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	listLength := len(list)
 	for i := 0; i < listLength; i++ {
 		k := list[i]
 
 		switch k.(type) {
-		case func(utils.OrderedMap) (buf *bytes.Buffer):
-			buf.WriteString(displaySpecificInformation(om, i == listLength-1, tab, k.(func(utils.OrderedMap) (buf *bytes.Buffer))).String())
+		case func(OrderedMap) (buf *bytes.Buffer):
+			buf.WriteString(displaySpecificInformation(om, i == listLength-1, tab, k.(func(OrderedMap) (buf *bytes.Buffer))).String())
 
 		case string:
 			var addTab string
@@ -221,28 +221,28 @@ func display(om utils.OrderedMap, list []any, tab string) (buf *bytes.Buffer) {
 	return
 }
 
-func url(information utils.OrderedMap) (buf *bytes.Buffer) {
+func url(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	buf.WriteString(information.Map["-112"].(string))
 	return
 }
 
-func userAgent(information utils.OrderedMap) (buf *bytes.Buffer) {
+func userAgent(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := getSplitDeviceData(information)
 	buf.WriteString(split[0])
 	return
 }
 
-func startTimestampLocalTime(information utils.OrderedMap) (buf *bytes.Buffer) {
+func startTimestampLocalTime(information OrderedMap) (buf *bytes.Buffer) {
 	_, _, _, ts := getStartTs(information) //ts is in millisecond
 	buf = new(bytes.Buffer)
 	timeInThisZone := time.UnixMilli(int64(ts)).In(time.Local)
-	buf.WriteString(timeInThisZone.Format(time.DateTime))
+	buf.WriteString(timeInThisZone.Format(time.RFC1123Z))
 	return
 }
 
-func dtMact(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtMact(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitMouseData(information) //ts is in millisecond
 
@@ -287,7 +287,7 @@ func dtMact(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtMactList(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtMactList(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitMouseData(information) //ts is in millisecond
 
@@ -344,7 +344,7 @@ func dtMactList(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func accelerationMact(information utils.OrderedMap) (buf *bytes.Buffer) {
+func accelerationMact(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitMouseData(information) //ts is in millisecond
 
@@ -397,7 +397,7 @@ func accelerationMact(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtTact(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtTact(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitTouchData(information) //ts is in millisecond
 
@@ -442,7 +442,7 @@ func dtTact(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtTactList(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitTouchData(information) //ts is in millisecond
 
@@ -495,7 +495,7 @@ func dtTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dPosTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dPosTactList(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitTouchData(information) //ts is in millisecond
 
@@ -553,7 +553,7 @@ func dPosTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtdPosTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtdPosTactList(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitTouchData(information) //ts is in millisecond
 
@@ -619,7 +619,7 @@ func dtdPosTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func tactVelocity(information utils.OrderedMap) (buf *bytes.Buffer) {
+func tactVelocity(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitTouchData(information) //ts is in millisecond
 
@@ -684,7 +684,7 @@ func tactVelocity(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtdPosCntTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtdPosCntTactList(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitTouchData(information) //ts is in millisecond
 
@@ -745,7 +745,7 @@ func dtdPosCntTactList(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtKact(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtKact(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitKeyboardData(information) //ts is in millisecond
 
@@ -790,7 +790,7 @@ func dtKact(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func dtKactList(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtKactList(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	_, _, _, split := splitKeyboardData(information) //ts is in millisecond
 
@@ -845,42 +845,42 @@ func dtKactList(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func sensorSeparator(information utils.OrderedMap) (buf *bytes.Buffer) {
+func sensorSeparator(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	separator := strings.Split(string(information.Map["raw"].([]uint8))[1:], ",2,")[0] + ","
 	buf.WriteString(separator)
 	return
 }
 
-func encryptionKey(information utils.OrderedMap) (buf *bytes.Buffer) {
+func encryptionKey(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(keys[1])
 	return
 }
 
-func encryptionTime(information utils.OrderedMap) (buf *bytes.Buffer) {
+func encryptionTime(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(strings.Split(keys[3], ",")[4])
 	return
 }
 
-func shufflingKey(information utils.OrderedMap) (buf *bytes.Buffer) {
+func shufflingKey(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(keys[2])
 	return
 }
 
-func shufflingTime(information utils.OrderedMap) (buf *bytes.Buffer) {
+func shufflingTime(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(strings.Split(keys[3], ",")[3])
 	return
 }
 
-func rValue(information utils.OrderedMap) (buf *bytes.Buffer) {
+func rValue(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = splitPizte(information)
@@ -888,7 +888,7 @@ func rValue(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func rcfp(information utils.OrderedMap) (buf *bytes.Buffer) {
+func rcfp(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = splitPizte(information)
@@ -896,34 +896,34 @@ func rcfp(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func fpValStr(information utils.OrderedMap) (buf *bytes.Buffer) {
+func fpValStr(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	buf.WriteString(strings.Split(information.Map["-70"].(string), ";")[0])
 	return
 }
 
-func sensorIdTime(information utils.OrderedMap) (buf *bytes.Buffer) {
+func sensorIdTime(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(strings.Split(keys[3], ",")[2])
 	return
 }
 
-func scriptInitTime(information utils.OrderedMap) (buf *bytes.Buffer) {
+func scriptInitTime(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(strings.Split(keys[3], ",")[1])
 	return
 }
 
-func sensorBuildTime(information utils.OrderedMap) (buf *bytes.Buffer) {
+func sensorBuildTime(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	keys := strings.Split(string(information.Map["encrypted"].([]uint8)), ";")
 	buf.WriteString(strings.Split(keys[3], ",")[0])
 	return
 }
 
-func dtBpd(information utils.OrderedMap) (buf *bytes.Buffer) {
+func dtBpd(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = splitPizte(information)
@@ -933,7 +933,7 @@ func dtBpd(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func screenWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
+func screenWidth(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -941,7 +941,7 @@ func screenWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func screenHeight(information utils.OrderedMap) (buf *bytes.Buffer) {
+func screenHeight(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -949,7 +949,7 @@ func screenHeight(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func availableWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
+func availableWidth(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -957,7 +957,7 @@ func availableWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func availableHeight(information utils.OrderedMap) (buf *bytes.Buffer) {
+func availableHeight(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -965,7 +965,7 @@ func availableHeight(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func innerWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
+func innerWidth(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -973,7 +973,7 @@ func innerWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func innerHeight(information utils.OrderedMap) (buf *bytes.Buffer) {
+func innerHeight(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -981,7 +981,7 @@ func innerHeight(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func outerWidth(information utils.OrderedMap) (buf *bytes.Buffer) {
+func outerWidth(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	_, _, _, split = getSplitDeviceData(information)
@@ -996,7 +996,7 @@ func formatNumber(number string) string {
 	return ac.FormatMoney(n)
 }
 
-func JSHeapLimit(information utils.OrderedMap) (buf *bytes.Buffer) {
+func JSHeapLimit(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	split = strings.Split(information.Map["-131"].(string), ",")
@@ -1004,7 +1004,7 @@ func JSHeapLimit(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func JSHeapTotal(information utils.OrderedMap) (buf *bytes.Buffer) {
+func JSHeapTotal(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	split = strings.Split(information.Map["-131"].(string), ",")
@@ -1014,7 +1014,7 @@ func JSHeapTotal(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func JSHeapUsed(information utils.OrderedMap) (buf *bytes.Buffer) {
+func JSHeapUsed(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	split = strings.Split(information.Map["-131"].(string), ",")
@@ -1024,7 +1024,7 @@ func JSHeapUsed(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func timezoneOffset(information utils.OrderedMap) (buf *bytes.Buffer) {
+func timezoneOffset(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	split = strings.Split(information.Map["-70"].(string), ";")
@@ -1044,14 +1044,14 @@ func timezoneOffset(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func lang(information utils.OrderedMap) (buf *bytes.Buffer) {
+func lang(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var _, _, _, split = getSplitDeviceData(information)
 	buf.WriteString(split[4])
 	return
 }
 
-func langLen(information utils.OrderedMap) (buf *bytes.Buffer) {
+func langLen(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	split = strings.Split(information.Map["-131"].(string), ",")
@@ -1063,7 +1063,7 @@ func langLen(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func langHash(information utils.OrderedMap) (buf *bytes.Buffer) {
+func langHash(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	var split []string
 	split = strings.Split(information.Map["-129"].(string), ",")
@@ -1075,7 +1075,7 @@ func langHash(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func webglVendor(information utils.OrderedMap) (buf *bytes.Buffer) {
+func webglVendor(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	first := strings.Split(information.Map["-129"].(string), ";wl3")[0]
 	second := strings.Split(first, ",")
@@ -1089,7 +1089,7 @@ func webglVendor(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func webglRenderer(information utils.OrderedMap) (buf *bytes.Buffer) {
+func webglRenderer(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	first := strings.Split(information.Map["-129"].(string), ";wl4")[0]
 	second := strings.Split(first, ",ANGLE (")
@@ -1103,7 +1103,7 @@ func webglRenderer(information utils.OrderedMap) (buf *bytes.Buffer) {
 	return
 }
 
-func doNotTrack(information utils.OrderedMap) (buf *bytes.Buffer) {
+func doNotTrack(information OrderedMap) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	split := strings.Split(information.Map["-70"].(string), ";")
 	buf.WriteString(split[len(split)-1])
